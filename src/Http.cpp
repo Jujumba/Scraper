@@ -1,5 +1,4 @@
 #include "Http.hpp"
-
 std::string Http::get(const std::string& url, bool save) {
     WSADATA wsaData {};
     if ( WSAStartup(REQUIRED_VERSION, &wsaData) != 0) {
@@ -16,26 +15,22 @@ std::string Http::get(const std::string& url, bool save) {
 }
 
 
-void Http::parse_url(std::string& mUrl, std::string &serverName, std::string &filepath, std::string &filename) {
-    std::string::size_type n;
-    std::string url = mUrl;
-
-    if (url.substr(0,7) == "http://")
-        url.erase(0,7);
-
-    if (url.substr(0,8) == "https://")
-        url.erase(0,8);
-
-    n = url.find('/');
+void Http::parse_url(std::string& url, std::string &server, std::string &filepath) {
+    int n;
+    int from = (url.starts_with(HTTP_PREFIX)) ? 8 : 0; // it doesn't matter either if http:// or https://
+    n = url.find('/', from - 1);
     if (n != std::string::npos) {
-        serverName = url.substr(0,n);
-        filepath = url.substr(n);
-        n = filepath.rfind('/');
-        filename = filepath.substr(n+1);
+        int to = url.find('/', n+ 1);
+        if (to != std::string::npos) {
+            server = url.substr(n + 1, to - n - 1);
+            filepath = url.substr(to);
+        } else {
+            server = url.substr(n + 1);
+            filepath = "/";
+        }
     } else {
-        serverName = url;
+        server = url;
         filepath = "/";
-        filename = "";
     }
 }
 
@@ -71,20 +66,19 @@ void Http::connect(SOCKET *socket, std::string& host) {
 }
 
 ulong Http::get_header_length(const std::string &content) {
-    const char *srchStr1 = "\r\n\r\n", *srchStr2 = "\n\r\n\r";
     char *findPos;
-    long ofset = -1;
+    ulong ofset = -1;
 
-    findPos = strstr((char*) content.c_str(), srchStr1);
+    findPos = strstr((char*) content.c_str(), HTTP_DELIM1);
     if (findPos != nullptr) {
         ofset = findPos - content.c_str();
-        ofset += strlen(srchStr1);
+        ofset += strlen(HTTP_DELIM1);
     }
     else {
-        findPos = strstr((char*)content.c_str(), srchStr2);
+        findPos = strstr((char*) content.c_str(), HTTP_DELIM2);
         if (findPos != nullptr) {
             ofset = findPos - content.c_str();
-            ofset += strlen(srchStr2);
+            ofset += strlen(HTTP_DELIM2);
         }
     }
     return ofset;
@@ -93,22 +87,24 @@ ulong Http::get_header_length(const std::string &content) {
 std::string Http::read(std::string& url) {
     char buffer[BUFFER_SIZE];
     SOCKET socket;
-    std::string server, filepath, filename;
+    std::string server, filepath;
 
-    parse_url(url, server, filepath, filename);
-
+    parse_url(url, server, filepath);
     connect(&socket, server);
-    if (socket == INVALID_SOCKET) return "";
-    std::string superreq = "GET "+filepath+" HTTP/1.0\r\nHost: " +server+"\r\n\r\n";
-    send(socket, superreq.c_str(), superreq.size(), 0);
+    if (socket == INVALID_SOCKET) {
 
-    long totalBytesRead = 0, thisReadSize = 0;
-    std::string total;
-    while ((thisReadSize = recv (socket, buffer, BUFFER_SIZE, 0)) > 0) {
-        total += std::string(buffer, thisReadSize);
-        totalBytesRead += thisReadSize;
+        return "";
     }
+    std::string request = "GET " + filepath + " HTTP/1.0\r\nHost: " + server + "\r\n\r\n";
+    send(socket, request.c_str(), (int) request.size(), 0);
 
+    long total_read = 0, curr_read;
+    std::string total;
+    while ((curr_read = recv (socket, buffer, BUFFER_SIZE, 0)) > 0) {
+        total += std::string(buffer, curr_read);
+        total_read += curr_read;
+    }
     closesocket(socket);
-    return total.substr(this->get_header_length(total));
+    ulong header_len = get_header_length(total);
+    return total.substr(header_len < total.size() ? header_len : 0);
 }
