@@ -12,16 +12,20 @@
 #include <windows.h>
 #include <string>
 #include <fstream>
+#include <sstream>
+#include <iomanip>
+#include <string>
 
 typedef unsigned long ulong;
 class Http {
 public:
-    static std::string get(const std::string&, bool = false);
+    std::string get(const std::string&, bool = false);
 private:
-    static void connect(SOCKET*, std::string&);
-    static std::string read(std::string&);
-    static void parse_url(std::string&, std::string&, std::string&);
-    static ulong get_header_length(const std::string&);
+    void connect(SOCKET*, std::string&);
+    std::string read(std::string&);
+    void parse_url(std::string&, std::string&, std::string&);
+    ulong get_header_length(const std::string&);
+    std::string strhash(const std::string&);
 };
 
 

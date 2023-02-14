@@ -1,14 +1,26 @@
 #include "Http.hpp"
+
+std::string Http::strhash(const std::string& s) {
+    unsigned hash {};
+    for (char c : s) {
+        hash = (hash << 31) + c;
+    }
+    std::stringstream ss;
+    ss << std::hex << std::setw(8) << std::setfill('0') << hash;
+    return ss.str();
+}
+
 std::string Http::get(const std::string& url, bool save) {
     WSADATA wsaData {};
     if ( WSAStartup(REQUIRED_VERSION, &wsaData) != 0) {
         return "";
     }
 
-    std::string content = read(const_cast<std::string &>(url));
+    std::string content = read(const_cast<std::string&>(url));
     WSACleanup();
     if (save) {
-        std::ofstream ofs{"../download.html"}; //todo: generate random file name!
+        std::hash<std::string> hash;
+        std::ofstream ofs{"../" + strhash(url) +".html"}; //todo: generate random file name!
         ofs << content;
     }
     return content;
