@@ -16,7 +16,7 @@
 #include <iomanip>
 #include <string>
 
-typedef unsigned long ulong;
+typedef unsigned long long ulong;
 class Http {
 public:
     std::string get(const std::string&, bool = false);
