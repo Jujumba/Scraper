@@ -6,7 +6,8 @@
 #define REQUIRED_VERSION 0x101
 #define HTTP_DELIM1 "\r\n\r\n"
 #define HTTP_DELIM2 "\n\r\n\r"
-#define HTTP_PREFIX "http"
+#define HTTP_PREFIX "http://"
+#define HTTPS_PREFIX "https://"
 #pragma comment(lib, "ws2_32.lib")
 #include <windows.h>
 #include <string>
