@@ -1,4 +1,3 @@
-#include <iostream>
 #include "Http.hpp"
 std::string Http::get(const std::string& url, bool save) {
     WSADATA wsaData {};
@@ -94,7 +93,6 @@ std::string Http::read(std::string& url) {
         return "";
     }
     std::string request = "GET " + filepath + " HTTP/1.0\r\nHost: " + server + "\r\nUser-Agent: Mozilla/5.0\r\nAccept: text/html\r\n\r\n";
-    std::cout << request << std::endl;
     send(socket, request.c_str(), (int) request.size(), 0);
     long total_read = 0, curr_read;
     std::string total;
