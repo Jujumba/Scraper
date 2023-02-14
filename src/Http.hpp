@@ -19,6 +19,10 @@
 typedef unsigned long long ulong;
 class Http {
 public:
+    Http() = default;
+    ~Http() = default;
+    Http(Http&) = default;
+    Http(Http&&) = default;
     std::string get(const std::string&, bool = false);
 private:
     void connect(SOCKET*, std::string&);
