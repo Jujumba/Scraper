@@ -1,5 +1,4 @@
 #include "Http.hpp"
-
 std::string Http::strhash(const std::string& s) {
     unsigned hash {};
     for (char c : s) {
@@ -33,7 +32,7 @@ void Http::parse_url(std::string& url, std::string &server, std::string &filepat
     } else if (url.starts_with(HTTPS_PREFIX)) {
         url = url.erase(0,8);
     }
-    int slash = url.find('/');
+    ulong slash = url.find('/');
     if (slash != std::string::npos) {
         filepath = url.substr(slash);
         server = url.substr(0, url.size() - filepath.size());
@@ -75,22 +74,8 @@ void Http::connect(SOCKET *socket, std::string& host) {
 }
 
 ulong Http::get_header_length(const std::string &content) {
-    char *findPos;
-    ulong ofset = -1;
-
-    findPos = strstr((char*) content.c_str(), HTTP_DELIM1);
-    if (findPos != nullptr) {
-        ofset = findPos - content.c_str();
-        ofset += strlen(HTTP_DELIM1);
-    }
-    else {
-        findPos = strstr((char*) content.c_str(), HTTP_DELIM2);
-        if (findPos != nullptr) {
-            ofset = findPos - content.c_str();
-            ofset += strlen(HTTP_DELIM2);
-        }
-    }
-    return ofset;
+    ulong  header_end = content.find(HTTP_DELIM1);
+    return header_end != std::string::npos ? header_end : 0;
 }
 
 std::string Http::read(std::string& url) {
