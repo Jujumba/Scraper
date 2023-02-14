@@ -1,3 +1,4 @@
+#include <iostream>
 #include "Http.hpp"
 std::string Http::get(const std::string& url, bool save) {
     WSADATA wsaData {};
@@ -16,21 +17,18 @@ std::string Http::get(const std::string& url, bool save) {
 
 
 void Http::parse_url(std::string& url, std::string &server, std::string &filepath) {
-    int n;
-    int from = (url.starts_with(HTTP_PREFIX)) ? 8 : 0; // it doesn't matter either if http:// or https://
-    n = url.find('/', from - 1);
-    if (n != std::string::npos) {
-        int to = url.find('/', n+ 1);
-        if (to != std::string::npos) {
-            server = url.substr(n + 1, to - n - 1);
-            filepath = url.substr(to);
-        } else {
-            server = url.substr(n + 1);
-            filepath = "/";
-        }
+    if (url.starts_with(HTTP_PREFIX)) {
+        url = url.erase(0,7);
+    } else if (url.starts_with(HTTPS_PREFIX)) {
+        url = url.erase(0,8);
+    }
+    int slash = url.find('/');
+    if (slash != std::string::npos) {
+        filepath = url.substr(slash);
+        server = url.substr(0, url.size() - filepath.size());
     } else {
-        server = url;
         filepath = "/";
+        server = url;
     }
 }
 
@@ -85,7 +83,7 @@ ulong Http::get_header_length(const std::string &content) {
 }
 
 std::string Http::read(std::string& url) {
-    char buffer[BUFFER_SIZE];
+    char buffer[BUFFER_SIZE*5];
     SOCKET socket;
     std::string server, filepath;
 
@@ -95,13 +93,13 @@ std::string Http::read(std::string& url) {
 
         return "";
     }
-    std::string request = "GET " + filepath + " HTTP/1.0\r\nHost: " + server + "\r\n\r\n";
+    std::string request = "GET " + filepath + " HTTP/1.0\r\nHost: " + server + "\r\nUser-Agent: Mozilla/5.0\r\nAccept: text/html\r\n\r\n";
+    std::cout << request << std::endl;
     send(socket, request.c_str(), (int) request.size(), 0);
-
     long total_read = 0, curr_read;
     std::string total;
-    while ((curr_read = recv (socket, buffer, BUFFER_SIZE, 0)) > 0) {
-        total += std::string(buffer, curr_read);
+    while ((curr_read = recv (socket, buffer, BUFFER_SIZE*5, 0)) > 0) {
+        total += std::string(buffer,curr_read);
         total_read += curr_read;
     }
     closesocket(socket);
