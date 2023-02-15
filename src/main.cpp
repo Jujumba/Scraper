@@ -1,6 +1,5 @@
-#include "Http.hpp"
-#include "iostream"
+#include "Scraper.hpp"
 int main() {
-    Http http;
-    std::cout << http.get("www.google.com") << std::endl;
+    scraper::Scraper scraper;
+    scraper.scrap("https://www.google.com/");
 }
