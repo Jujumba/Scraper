@@ -1,5 +1,5 @@
 #include "Http.hpp"
-std::string Http::strhash(const std::string& s) {
+std::string scraper::Http::strhash(const std::string& s) {
     unsigned hash {};
     for (char c : s) {
         hash = (hash << 31) + c;
@@ -9,7 +9,7 @@ std::string Http::strhash(const std::string& s) {
     return ss.str();
 }
 
-std::string Http::get(const std::string& url, bool save) {
+std::string scraper::Http::get(const std::string& url, bool save) {
     WSADATA wsaData {};
     if ( WSAStartup(REQUIRED_VERSION, &wsaData) != 0) {
         return "";
@@ -26,7 +26,7 @@ std::string Http::get(const std::string& url, bool save) {
 }
 
 
-void Http::parse_url(std::string& url, std::string &server, std::string &filepath) {
+void scraper::Http::parse_url(std::string& url, std::string &server, std::string &filepath) {
     if (url.starts_with(HTTP_PREFIX)) {
         url = url.erase(0,7);
     } else if (url.starts_with(HTTPS_PREFIX)) {
@@ -42,7 +42,7 @@ void Http::parse_url(std::string& url, std::string &server, std::string &filepat
     }
 }
 
-void Http::connect(SOCKET *socket, std::string& host) {
+void scraper::Http::connect(SOCKET *socket, std::string& host) {
     hostent *hostent;
     unsigned addr;
     sockaddr_in server{};
@@ -73,12 +73,12 @@ void Http::connect(SOCKET *socket, std::string& host) {
     }
 }
 
-ulong Http::get_header_length(const std::string &content) {
+ulong scraper::Http::get_header_length(const std::string &content) {
     ulong  header_end = content.find(HTTP_DELIM1);
     return header_end != std::string::npos ? header_end : 0;
 }
 
-std::string Http::read(std::string& url) {
+std::string scraper::Http::read(std::string& url) {
     char buffer[BUFFER_SIZE*5];
     SOCKET socket;
     std::string server, filepath;
@@ -93,7 +93,7 @@ std::string Http::read(std::string& url) {
     send(socket, request.c_str(), (int) request.size(), 0);
     long total_read = 0, curr_read;
     std::string total;
-    while ((curr_read = recv (socket, buffer, BUFFER_SIZE*5, 0)) > 0) {
+    while ((curr_read = recv(socket, buffer, BUFFER_SIZE*5, 0)) > 0) {
         total += std::string(buffer,curr_read);
         total_read += curr_read;
         if (total.ends_with(HTTP_DELIM1) || total.ends_with(HTTP_DELIM2)) break;
