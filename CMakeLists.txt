@@ -3,5 +3,5 @@ project(Scraper)
 
 set(CMAKE_CXX_STANDARD 23)
 
-add_executable(Scraper src/main.cpp src/Http.cpp src/Http.hpp)
+add_executable(Scraper src/main.cpp src/Http.cpp src/Http.hpp src/Scraper.cpp src/Scraper.hpp)
 include_directories(lib/asio/include)
