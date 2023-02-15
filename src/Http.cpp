@@ -96,7 +96,7 @@ std::string scraper::Http::read(std::string& url) {
     while ((curr_read = recv(socket, buffer, BUFFER_SIZE*5, 0)) > 0) {
         total += std::string(buffer,curr_read);
         total_read += curr_read;
-        if (total.ends_with(HTTP_DELIM1) || total.ends_with(HTTP_DELIM2)) break;
+        if (buffer[curr_read] == '\0') break;
     }
     closesocket(socket);
     ulong header_len = get_header_length(total);
